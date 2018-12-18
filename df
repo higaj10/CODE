@@ -1,37 +1,35 @@
 create or replace procedure total_score_250(d_code IN NUMBER)
-as
-v_cnt NUMBER;
-NO_DATA EXCEPTION;
-CURSOR c_stu IS SELECT s.student_code as code, student_name, Subject1, Subject2, subject3 FROM student_master s, student_marks sm WHERE sm.student_code = s.student_code AND dept_code = d_code;
-v_total number(10);
-BEGIN
-  SELECT COUNT(*) INTO v_cnt FROM student_master WHERE dept_code = d_code;
-  IF v_cnt = 0 THEN
-      RAISE NO_DATA;
-  ELSE
-    for s in c_stu
-    loop
-      v_total:=s.Subject1+s.Subject2+s.subject3;
-      if v_total >200 then
-        DBMS_OUTPUT.PUT_LINE( s.student_name || ' ' || v_total );
-      end if;
-      UPDATE STUDENT_MARKS
-        SET subject1 =subject1+1
-            
-        WHERE STUDENT_CODE = s.code;
-        
-    end loop;
-  END IF;
-  EXCEPTION
-    WHEN NO_DATA THEN
-      DBMS_OUTPUT.PUT_LINE( 'No Department code found' );
+as 
+v_cnt NUMBER; 
+NO_DATA EXCEPTION; 
+CURSOR c_student_info IS SELECT s.student_code as code, student_name, Subject1, Subject2, subject3, student_year FROM student_master s,  student_marks sm WHERE sm.student_code = s.student_code AND dept_code = d_code; 
+v_total number(10); 
+BEGIN 
+  SELECT COUNT(*) INTO v_cnt FROM student_master WHERE dept_code = d_code; 
+  IF v_cnt = 0 THEN 
+      RAISE NO_DATA; 
+  ELSE 
+    FOR s_info in c_student_info 
+    LOOP 
+      v_total:=s_info.Subject1+s_info.Subject2+s_info.subject3; 
+      IF v_total >250 THEN 
+        DBMS_OUTPUT.PUT_LINE( s_info.student_name || ' ' || v_total ); 
+      UPDATE STUDENT_MARKS 
+        SET subject1 =nvl(subject1,0)+1,subject2 =nvl(subject2,0)+1,subject3 =nvl(subject3,0)+1 
+        WHERE STUDENT_CODE = s_info.code and student_year = s_info.student_year; 
+	  END IF;
+    END LOOP; 
+  END IF; 
+  EXCEPTION 
+    WHEN NO_DATA THEN 
+      DBMS_OUTPUT.PUT_LINE( 'No Department code found' ); 
    -- WHEN NO_ROW_FOUND THEN
      -- DBMS_OUTPUT.PUT_LINE( 'No Row found in given dept code' );
-    WHEN OTHERS THEN
-      DBMS_OUTPUT.PUT_LINE( 'OTHERS ERRORS' );
-      
+     
+    WHEN OTHERS THEN 
+      DBMS_OUTPUT.PUT_LINE( 'OTHERS ERRORS' ); 
+       
     
 END total_score_250;
 /
 show errors;
-SELECT student_na
